@@ -71,7 +71,7 @@ elif add_sidebar == 'Referee Info':
 
     layout = go.Layout(title=f'Number of Yellow and Red Cards given by {selected_ref} Over Time',
                    yaxis=dict(title='Number of Cards'),
-                   legend=dict(title='Legend'))
+                   legend=dict(title='Card Type'))
 
     fig = go.Figure(data=[trace_Y, trace_R], layout=layout)
 
