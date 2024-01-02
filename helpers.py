@@ -1,9 +1,32 @@
 import numpy as np
 import pandas as pd
 import streamlit as st
+import re
+import requests
+from io import StringIO
+
+def int_to_season(year):
+    yr = str(year)[2:]
+    seas = yr + str(int(yr)+1)[-2:].zfill(2)
+    return seas
+
+def int_to_url(year):
+    seas = int_to_season(year)
+    url = 'https://www.football-data.co.uk./mmz4281/'+seas+'/E0.csv'
+    return url
 
 @st.cache_data
-def load_data():
+def get_data_for_single_year(year):
+    url = int_to_url(year)
+    s=requests.get(url).text
+    s = re.sub(r',,+', '', s)
+    data=pd.read_csv(StringIO(s))
+    data['Date'] = pd.to_datetime(data['Date'],format="%d/%m/%Y")
+    data['Season'] = year
+    return data
+
+@st.cache_data
+def load_data(updated_year=None):
     df = pd.read_csv('EPL.csv')
     
     date_parse1_cond = (df.Season.between(1993,2001))|(df.Season.between(2003,2014))|(df.Season.between(2016,2016))
@@ -14,6 +37,14 @@ def load_data():
     df.loc[date_parse1_idx,'Date'] = pd.to_datetime(df.loc[date_parse1_idx,'Date'],format='%d/%m/%y')
     df.loc[date_parse2_idx,'Date'] = pd.to_datetime(df.loc[date_parse2_idx,'Date'],format='%d/%m/%Y')
     
+    if updated_year:
+        try:
+            df_year = get_data_for_single_year(updated_year)
+            df = pd.concat([df[df.Season < updated_year],df_year])
+        except:
+            df_year = get_data_for_single_year(updated_year-1)
+            df = pd.concat([df[df.Season < updated_year-1],df_year])
+            pass
     return df
 
 @st.cache_data

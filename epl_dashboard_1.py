@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import streamlit as st
 from datetime import datetime
+import pytz, time
 
 from helpers import *
 
@@ -26,9 +27,15 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
+# Set the UTC timezone
+utc_timezone = pytz.timezone('UTC')
+
+# Get Time Info
+current_datetime_utc = datetime.now(utc_timezone)
+current_year = current_datetime_utc.year
 
 # Load data
-df = load_data()
+df = load_data(updated_year=current_year)
 
 
 # Build Dashboard
